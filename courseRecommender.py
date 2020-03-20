@@ -2,15 +2,23 @@
 import numpy as np
 import pandas as pd
 
-def recommend (scores): 
+def recommend (scores, base): 
+    results = " "
     #import user scores
     user_scores = pd.read_csv(scores)
+    # sort the scores in accending order
     user_scores.groupby('Title')['Score'].mean().sort_values(ascending=True)
-    user_score_data = user_scores.pivot_table(index='UserID', columns='Title', values='Score')
-    linux_score = user_score_data['Linux for Beginners']
-    linuxBasics_corr = user_score_data.corrwith(linux_score)
 
-    corr_linuxBasics = pd.DataFrame(linuxBasics_corr, columns=['Correlation'])
-    corr_linuxBasics.dropna(inplace=True)
-    corr_linuxBasics.sort_values('Correlation', ascending=False).head(10)
+    # create a matrix of courses and score
+    score_matrix = user_scores.pivot_table(index='UserID', columns='Title', values='Score')
+
+    # grab score for baseline resource
+    base_score = score_matrix[base]
+    # find resourses that correlate
+    base_corr = score_matrix.corrwith(base_score)
+
+    # put results into data frame
+    bCorr = pd.DataFrame(base_corr, columns=['Correlation'])
+    bCorr.dropna(inplace=True)
+    bCorr.sort_values('Correlation', ascending=False)
 
